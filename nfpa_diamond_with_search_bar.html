@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chemical Hazard Identification System</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    background-color: #f4f4f4;
+  }
+  .header {
+    text-align: center;
+    margin-top: 20px; /* Space from top */
+  }
+  .search-bar {
+    text-align: center;
+    margin: 20px auto; /* Space above and below */
+  }
+  .search-bar input {
+    padding: 10px;
+    font-size: 16px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    width: 50%; /* Set a width to the search bar */
+  }
+  .nfpa-diamond {
+    position: relative;
+    width: 250px;
+    height: 250px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px; /* Space above the diamond */
+  }
+  .diamond-part {
+    border: 2px solid black;
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    transform: rotate(45deg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .diamond-part p {
+    margin: 0;
+    font-size: 1rem;
+    transform: rotate(-45deg); /* Counter rotate the text to appear upright */
+    line-height: normal;
+  }
+  .red {
+    background-color: red;
+    top: 0px;
+    z-index: 1;
+  }
+  .blue {
+    background-color: blue;
+    left: 0;
+    z-index: 1;
+  }
+  .yellow {
+    background-color: yellow;
+    color: black; /* For better visibility on yellow */
+    right: 0;
+    z-index: 1;
+  }
+  .white {
+    background-color: white;
+    color: black; /* For better visibility on white */
+    bottom: 0;
+    z-index: 1;
+  }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1> Sifado Liron Chemical Hazard Identification System</h1>
+</div>
+<div class="search-bar">
+  <input type="search" id="searchInput" placeholder="Enter UN number">
+</div>
+<h3 id="chemicalDescription"></h3>
+<div class="nfpa-diamond">
+  <div class="diamond-part red"><p id="fireHazard">-</p></div>
+  <div class="diamond-part blue"><p id="healthHazard">-</p></div>
+  <div class="diamond-part yellow"><p id="instability">-</p></div>
+  <div class="diamond-part white"><p id="specificHazard">-</p></div>
+</div>
+
+<script>
+const hazardInformation = {
+  HEALTH_HAZARD: {
+    0: "Normal material",
+    1: "Slightly hazardous",
+    2: "Hazardous",
+    3: "Extreme danger",
+    4: "Deadly"
+  },
+  FIRE_HAZARD: {
+  0: "Will not burn",
+  1: "Above 93° C",
+  2: "Below 93° C",
+  3: "Below 38° C",
+  4: "Below 23° C"
+  },
+  SPECIFIC_HAZARD: [
+    "Oxidizer",
+    "Acid",
+    "ACID",
+    "Alkali",
+    "ALK",
+    "Corrosive",
+    "COR",
+    "Use NO WATER",
+    "W",
+    "Radiation Hazard"
+  ],
+  INSTABILITY: {
+    0: "Stable",
+    1: "Unstable if heated",
+    2: "Violent chemical change",
+    3: "Shock and heat may detonate",
+    4: "May detonate"
+  }
+};
+
+const chemicals = {
+  UN1075: {
+    description: "Propane",
+    INSTABILITY: 0,
+    SPECIFIC_HAZARD: "None",
+    FIRE_HAZARD: 3,
+    HEALTH_HAZARD: 0
+  },
+  UN1203: {
+    description: "Gasoline",
+    INSTABILITY: 0,
+    SPECIFIC_HAZARD: "None",
+    FIRE_HAZARD: 3,
+    HEALTH_HAZARD: 0
+  },
+  UN1230: {
+    description: "Methanol",
+    INSTABILITY: 0,
+    SPECIFIC_HAZARD: "POI",
+    FIRE_HAZARD: 3,
+    HEALTH_HAZARD: 4
+  },
+  UN0029: {
+    description: "Explosive Material",
+    INSTABILITY: 4,
+    SPECIFIC_HAZARD: "None",
+    FIRE_HAZARD: 0,
+    HEALTH_HAZARD: 0
+  },
+  UN1344: {
+    description: "Ferrous Sulfide",
+    INSTABILITY: 0,
+    SPECIFIC_HAZARD: "None",
+    FIRE_HAZARD: 2,
+    HEALTH_HAZARD: 0
+  },
+  UN1748: {
+    description: "Oxidizing Substance",
+    INSTABILITY: 2,
+    SPECIFIC_HAZARD: "OXI",
+    FIRE_HAZARD: 2,
+    HEALTH_HAZARD: 0
+  },
+  UN1588: {
+    description: "Toxic Substance",
+    INSTABILITY: 0,
+    SPECIFIC_HAZARD: "TOX",
+    FIRE_HAZARD: 0,
+    HEALTH_HAZARD: 3
+  }
+};
+
+
+
+document.addEventListener('DOMContentLoaded', function () {
+  const searchInput = document.getElementById('searchInput');
+  const fireHazard = document.getElementById('fireHazard');
+  const healthHazard = document.getElementById('healthHazard');
+  const instability = document.getElementById('instability');
+  const specificHazard = document.getElementById('specificHazard');
+  const chemicalDescription = document.getElementById('chemicalDescription'); // Get the h3 element
+
+  searchInput.addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent the default action
+      const unNumber = 'UN' + searchInput.value.padStart(4, '0');
+      const chemicalData = chemicals[unNumber];
+
+      if (chemicalData) {
+        fireHazard.textContent = hazardInformation.FIRE_HAZARD[chemicalData.FIRE_HAZARD];
+        healthHazard.textContent = hazardInformation.HEALTH_HAZARD[chemicalData.HEALTH_HAZARD];
+        instability.textContent = hazardInformation.INSTABILITY[chemicalData.INSTABILITY];
+        specificHazard.textContent = hazardInformation.SPECIFIC_HAZARD.includes(chemicalData.SPECIFIC_HAZARD) ? chemicalData.SPECIFIC_HAZARD : 'None';
+
+        chemicalDescription.textContent = chemicalData.description || 'No description available.'; // Update the description
+      } else {
+        fireHazard.textContent = '-';
+        healthHazard.textContent = '-';
+        instability.textContent = '-';
+        specificHazard.textContent = '-';
+        chemicalDescription.textContent = 'No description available.'; // Reset the description
+
+        alert('No data found for number ' + searchInput.value);
+      }
+    }
+  });
+});
+
+</script>
+</body>
+</html>
+
